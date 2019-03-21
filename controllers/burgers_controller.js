@@ -2,38 +2,48 @@
 var express = require("express");
 
 // create router object
-var router = express.Router();
+var app = express.Router();
 
-// import burger.js MODEL for database functions
-let burger = require("../models/burger.js");
+// import models as db
+let db = require("../models");
 
 // Main Root directory.
-router.get("/", function (req, res) {
-    burger.all( (db_data) => {
-        let burgerHBSObj = {
-            burgers: db_data
-        }
-        console.log("burgerHBSObj: ", burgerHBSObj);
-        res.render("index", burgerHBSObj);
-    });
+app.get("/", function (req, res) {
+    db.Burger.findAll({}).then(function (dbBurger) {
+        var hbsObject = {
+            burgers: dbBurger
+        };
+        console.log("dbBurger: ", hbsObject);
+        res.render("index", hbsObject);
+    })
 });
 
-router.post("/api/newburger", function (request, response) {
-    burger.create( request.body.burger_name, (result) => {
+app.post("/api/newburger", function (request, response) {
+    db.Burger.create({
+        burger_name: request.body.burger_name,
+    }).then(result => {
         // return the id of the inserted row
         // https://github.com/mysqljs/mysql#getting-the-id-of-an-inserted-row
-        response.json({id: result.insertId});
+        response.json({ id: result.insertId });
         console.log("Newly added ID: ", result.insertId);
-    });
+    })
 });
 
-router.put("/api/update", function (request, response) {
+app.put("/api/update", function (request, response) {
     console.log(request.body.id);
-    burger.update( request.body.id, (result) => {
-        response.json({id: result.insertId});
-        console.log("Updated ID: ", result.insertId);
-    });
+    db.Burger.update(
+        {
+            devoured: true,
+        },
+        {
+            where: {
+                id: request.body.id
+            }
+        }).then(result => {
+            response.json({ id: result.insertId });
+            console.log("Updated ID: ", result.insertId);
+        });
 });
 
 // export router object for server.js
-module.exports = router;
+module.exports = app;

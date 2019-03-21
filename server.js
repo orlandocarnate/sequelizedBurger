@@ -1,6 +1,7 @@
 // import packages
 var express = require("express"); // Set Express
 var exphbs = require("express-handlebars"); // Set Handlebars.
+var db = require("./models");
 // Import routes and give the server access to them.
 var routes = require("./controllers/burgers_controller.js");
 
@@ -24,7 +25,12 @@ app.set("view engine", "handlebars");
 // use the routes from burgers_controller.js
 app.use(routes);
 
+
+
 // setup server using PORT
-app.listen(PORT, function() {
-  console.log("App now listening at localhost:" + PORT);
+// db.sequelize.sync({ force: true }).then(function () {
+db.sequelize.sync().then(function () {
+  app.listen(PORT, function () {
+    console.log("App now listening at localhost:%s", PORT);
+  });
 });
